@@ -1,0 +1,530 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Advanced Fitness Tracker</title>
+  <link rel="stylesheet" href="styles.css">
+  <script src="assets/chart.min.js"></script>
+</head>
+<body>
+  <header>
+    <h1>Advanced Fitness Tracker</h1>
+  </header>
+<style>
+body {
+  font-family: Arial, sans-serif;
+  margin: 0;
+  padding: 0;
+  background: #f5f5f5;
+  color: #333;
+}
+
+header {
+  background: #4caf50;
+  color: white;
+  padding: 20px;
+  text-align: center;
+}
+
+main {
+  max-width: 800px;
+  margin: 20px auto;
+  padding: 20px;
+  background: white;
+  border-radius: 10px;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+section {
+  margin-bottom: 20px;
+}
+
+h2 {
+  color: #4caf50;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+ul li {
+  padding: 10px;
+  margin-bottom: 5px;
+  background: #e8f5e9;
+  border-left: 5px solid #4caf50;
+  border-radius: 5px;
+}
+
+#diet-plan p {
+  font-weight: bold;
+  margin-bottom: 10px;
+}
+
+/* Modal styles */
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  max-width: 500px;
+  width: 80%;
+  text-align: center;
+}
+
+textarea {
+  width: 100%;
+  margin-bottom: 10px;
+}
+
+/* Water progress bar */
+.progress-bar {
+  width: 100%;
+  height: 20px;
+  background: #ccc;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+#water-progress {
+  height: 100%;
+  background: #4caf50;
+  border-radius: 10px;
+  transition: width 0.3s ease;
+}
+
+/* Toggle switch */
+.switch {
+  position: fixed;
+  top: 10px;
+  right: 10px;
+}
+
+.switch input {
+  display: none;
+}
+
+.slider {
+  width: 50px;
+  height: 25px;
+  background: #ccc;
+  border-radius: 25px;
+  cursor: pointer;
+  position: relative;
+}
+
+.slider:before {
+  content: "";
+  position: absolute;
+  width: 20px;
+  height: 20px;
+  background: white;
+  border-radius: 50%;
+  top: 2.5px;
+  left: 2.5px;
+  transition: 0.3s;
+}
+
+input:checked + .slider {
+  background: #4caf50;
+}
+
+input:checked + .slider:before {
+  transform: translateX(25px);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+  background: #121212;
+  color: #e0e0e0;
+}
+
+body.dark-mode header {
+  background: #1e1e1e;
+}
+
+body.dark-mode main {
+  background: #1e1e1e;
+  color: #e0e0e0;
+}
+
+body.dark-mode ul li {
+  background: #333;
+  border-left-color: #4caf50;
+}
+</style>
+  <main>
+    <!-- User Info Section -->
+    <section id="user-info">
+      <h2>Welcome, <span id="user-name">Guest</span>!</h2>
+      <p>Your fitness goals: <span id="goal-summary">Not Set</span></p>
+      <button id="edit-goals">Edit Goals</button>
+    </section>
+
+    <!-- Water Intake Tracker -->
+    <section id="water-intake">
+      <h2>Water Intake</h2>
+      <p>You’ve consumed <span id="water-intake-amount">0</span> L of water today.</p>
+      <button id="add-water">Add 250ml</button>
+      <div class="progress-bar">
+        <div id="water-progress" style="width: 0%;"></div>
+      </div>
+    </section>
+
+    <!-- Steps, Calories, Time -->
+    <section id="steps">
+      <h2>Steps</h2>
+      <p>Steps walked today: <span id="steps-count">0</span></p>
+    </section>
+
+    <section id="calories">
+      <h2>Calories</h2>
+      <p>Calories burned today: <span id="calories-count">0</span></p>
+    </section>
+
+    <section id="time">
+      <h2>Time Spent</h2>
+      <p>Exercise time today: <span id="time-spent">0</span> minutes</p>
+    </section>
+
+    <!-- Diet Plan -->
+    <section id="diet-plan">
+      <h2>Today's Healthy Diet Plan</h2>
+      <p id="day">Loading...</p>
+      <ul id="diet-list"></ul>
+      <button id="edit-diet-plan">Edit Diet Plan</button>
+    </section>
+
+    <!-- Sleep Tracker -->
+    <section id="sleep-tracker">
+      <h2>Sleep Tracker</h2>
+      <p>You slept <span id="sleep-hours">0</span> hours last night.</p>
+      <button id="log-sleep">Log Sleep</button>
+    </section>
+
+    <!-- Progress Chart -->
+    <section id="progress">
+      <h2>Weekly Progress</h2>
+      <canvas id="weeklyChart"></canvas>
+    </section>
+
+    <!-- Dark Mode Toggle -->
+    <label class="switch">
+      <input type="checkbox" id="dark-mode-toggle">
+      <span class="slider"></span>
+    </label>
+  </main>
+
+  <!-- Modal for Diet Editing -->
+  <div id="diet-modal" class="modal hidden">
+    <div class="modal-content">
+      <h2>Edit Diet Plan</h2>
+      <textarea id="diet-text" rows="10" placeholder="Enter diet plan (one item per line)..."></textarea>
+      <button id="save-diet">Save</button>
+      <button id="cancel-edit">Cancel</button>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+  <script src="script.js"></script>
+
+
+    <label class="switch">
+      <input type="checkbox" id="dark-mode-toggle">
+      <span class="slider"></span>
+    </label>
+  </main>
+
+  <!-- Place JavaScript Code After Main Content -->
+
+  <script>
+    // Paste your JavaScript code here.
+// script.js
+
+// Healthy diet plan for each day
+const dietPlans = {
+  Monday: [
+    "Breakfast: Oatmeal with fresh fruits and a cup of green tea",
+    "Lunch: Grilled chicken salad with olive oil dressing",
+    "Dinner: Steamed salmon with a side of quinoa and broccoli",
+    "Snacks: Handful of almonds and a banana"
+  ],
+  Tuesday: [
+    "Breakfast: Smoothie bowl with berries, banana, and chia seeds",
+    "Lunch: Whole grain sandwich with avocado and turkey",
+    "Dinner: Stir-fried tofu with brown rice and vegetables",
+    "Snacks: Greek yogurt with honey and walnuts"
+  ],
+  Wednesday: [
+    "Breakfast: Scrambled eggs with spinach and whole grain toast",
+    "Lunch: Lentil soup with a slice of whole-grain bread",
+    "Dinner: Grilled chicken with sweet potato and asparagus",
+    "Snacks: Apple slices with peanut butter"
+  ],
+  Thursday: [
+    "Breakfast: Banana pancakes with a drizzle of honey",
+    "Lunch: Quinoa salad with chickpeas and fresh vegetables",
+    "Dinner: Baked cod with roasted Brussels sprouts",
+    "Snacks: Carrot sticks with hummus"
+  ],
+  Friday: [
+    "Breakfast: Avocado toast with a poached egg",
+    "Lunch: Sushi rolls with cucumber and salmon",
+    "Dinner: Grilled steak with mashed cauliflower",
+    "Snacks: Mixed nuts and a protein bar"
+  ],
+  Saturday: [
+    "Breakfast: Yogurt parfait with granola and fresh berries",
+    "Lunch: Grilled cheese sandwich with tomato soup",
+    "Dinner: Pasta with marinara sauce and grilled chicken",
+    "Snacks: Orange slices and dark chocolate"
+  ],
+  Sunday: [
+    "Breakfast: Smoothie with spinach, mango, and almond milk",
+    "Lunch: Veggie wrap with hummus and avocado",
+    "Dinner: Roast chicken with baked potatoes and green beans",
+    "Snacks: Popcorn and a handful of cashews"
+  ]
+};
+
+// Function to get the current day
+function getCurrentDay() {
+  const days = [
+    "Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"
+  ];
+  const today = new Date().getDay();
+  return days[today];
+}
+
+// Function to update the diet plan
+function updateDietPlan() {
+  const day = getCurrentDay();
+  const dietList = document.getElementById("diet-list");
+  const dayElement = document.getElementById("day");
+
+  // Clear existing items
+  dietList.innerHTML = "";
+
+  // Update day
+  dayElement.textContent = `Day: ${day}`;
+
+  // Add diet items
+  dietPlans[day].forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    dietList.appendChild(li);
+  });
+}
+
+// Initialize
+updateDietPlan();
+
+
+
+// Add listeners for editing the diet plan
+document.getElementById("edit-diet-plan").addEventListener("click", () => {
+  const day = getCurrentDay();
+  const currentPlan = dietPlans[day].join("\n");
+  document.getElementById("diet-text").value = currentPlan;
+  document.getElementById("diet-modal").classList.remove("hidden");
+});
+
+document.getElementById("cancel-edit").addEventListener("click", () => {
+  document.getElementById("diet-modal").classList.add("hidden");
+});
+
+document.getElementById("save-diet").addEventListener("click", () => {
+  const day = getCurrentDay();
+  const updatedPlan = document.getElementById("diet-text").value.split("\n");
+  dietPlans[day] = updatedPlan.filter(item => item.trim() !== ""); // Remove empty lines
+  document.getElementById("diet-modal").classList.add("hidden");
+  updateDietPlan(); // Update the displayed plan
+});
+
+
+
+
+// Water intake tracker
+let waterIntake = 0;
+const waterProgressBar = document.getElementById("water-progress");
+const waterIntakeElement = document.getElementById("water-intake-amount");
+
+document.getElementById("add-water").addEventListener("click", () => {
+  waterIntake += 0.25; // Add 250ml
+  waterIntakeElement.textContent = waterIntake;
+  waterProgressBar.style.width = `${(waterIntake / 3) * 100}%`; // assuming a 3L daily goal
+});
+
+// Sleep tracker
+let sleepHours = 0;
+document.getElementById("log-sleep").addEventListener("click", () => {
+  sleepHours = prompt("Enter your hours of sleep:");
+  document.getElementById("sleep-hours").textContent = sleepHours;
+});
+
+// Update diet plan
+function updateDietPlan() {
+  const day = getCurrentDay();
+  const dietList = document.getElementById("diet-list");
+  const dayElement = document.getElementById("day");
+
+  dietList.innerHTML = "";
+  dayElement.textContent = `Day: ${day}`;
+
+  dietPlans[day].forEach((item) => {
+    const li = document.createElement("li");
+    li.textContent = item;
+    dietList.appendChild(li);
+  });
+}
+
+// Get current day of the week
+function getCurrentDay() {
+  const days = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+  return days[new Date().getDay()];
+}
+
+// Initialize the page
+updateDietPlan();
+
+// Edit diet plan functionality
+document.getElementById("edit-diet-plan").addEventListener("click", () => {
+  const day = getCurrentDay();
+  const currentPlan = dietPlans[day].join("\n");
+  document.getElementById("diet-text").value = currentPlan;
+  document.getElementById("diet-modal").classList.remove("hidden");
+});
+
+document.getElementById("save-diet").addEventListener("click", () => {
+  const updatedPlan = document.getElementById("diet-text").value.split("\n");
+  dietPlans[getCurrentDay()] = updatedPlan;
+  updateDietPlan();
+  document.getElementById("diet-modal").classList.add("hidden");
+});
+
+document.getElementById("cancel-edit").addEventListener("click", () => {
+  document.getElementById("diet-modal").classList.add("hidden");
+});
+
+// Toggle dark mode
+const darkModeToggle = document.getElementById("dark-mode-toggle");
+darkModeToggle.addEventListener("change", () => {
+  document.body.classList.toggle("dark-mode", darkModeToggle.checked);
+});
+
+
+
+// Weekly data
+const weeklyData = {
+  days: ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"],
+  calories: [1200, 1500, 1100, 1700, 1400, 1800, 1600] // Example data
+};
+
+// Initialize the chart
+function renderChart() {
+  const ctx = document.getElementById("weeklyChart").getContext("2d");
+  new Chart(ctx, {
+    type: "bar",
+    data: {
+      labels: weeklyData.days,
+      datasets: [{
+        label: "Calories Burned",
+        data: weeklyData.calories,
+        backgroundColor: "rgba(76, 175, 80, 0.5)",
+        borderColor: "rgba(76, 175, 80, 1)",
+        borderWidth: 1
+      }]
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true
+        }
+      }
+    }
+  });
+}
+
+// Call the chart function
+renderChart();
+
+
+
+// Toggle dark mode
+document.getElementById("dark-mode-toggle").addEventListener("change", (e) => {
+  if (e.target.checked) {
+    document.body.classList.add("dark-mode");
+  } else {
+    document.body.classList.remove("dark-mode");
+  }
+});
+
+
+
+
+// Save the diet plan to localStorage
+function saveDietToLocalStorage() {
+  localStorage.setItem("dietPlans", JSON.stringify(dietPlans));
+}
+
+// Load the diet plan from localStorage
+function loadDietFromLocalStorage() {
+  const storedPlans = JSON.parse(localStorage.getItem("dietPlans"));
+  if (storedPlans) {
+    Object.assign(dietPlans, storedPlans);
+  }
+}
+
+// Load data on page load
+window.addEventListener("load", () => {
+  loadDietFromLocalStorage();
+  updateDietPlan();
+});
+
+// Save updated plans whenever they change
+document.getElementById("save-diet").addEventListener("click", () => {
+  saveDietToLocalStorage();
+});
+
+
+
+
+function scheduleMealReminder(time, message) {
+  const now = new Date();
+  const targetTime = new Date(now.toDateString() + " " + time);
+  const delay = targetTime - now;
+
+  if (delay > 0) {
+    setTimeout(() => {
+      alert(message);
+    }, delay);
+  }
+}
+
+// Example: Schedule reminders
+scheduleMealReminder("12:00 PM", "Time for lunch!");
+scheduleMealReminder("7:00 PM", "Time for dinner!");
+
+
+
+  </script>
+</body>
+</html>
